@@ -9,7 +9,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import CheckBox from '@react-native-community/checkbox';
+import CheckBox from 'expo-checkbox';
 
 const App = () => {
   const [tasks, setTasks] = useState([]);
@@ -34,7 +34,7 @@ const App = () => {
     <View style={styles.taskContainer}>
       <CheckBox
         value={item.completed}
-        onValueChange={() => toggleCompletion(item.id)}
+        onValueChange={() => toggleCompletion(item.id)}s
       />
       <View style={styles.taskTextContainer}>
         <Text style={[styles.taskTitle, item.completed && styles.completedText]}>{item.title}</Text>
