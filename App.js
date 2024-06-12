@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   View,
@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import CheckBox from 'expo-checkbox';
+import { createTable, fetchTasks, insertTask, updateTaskCompletion, deleteTask } from './SQL/dataBase';  
 
 const App = () => {
   const [tasks, setTasks] = useState([]);
@@ -17,29 +18,51 @@ const App = () => {
   const [description, setDescription] = useState('');
   const [isAdding, setIsAdding] = useState(false);
 
+  useEffect(() => {
+    createTable();
+    fetchTasks(setTasks);
+  }, []);
+
   const addTask = () => {
     if (title.length > 0 && description.length > 0) {
-      setTasks([...tasks, { id: Math.random().toString(), title, description, completed: false }]);
-      setTitle('');
-      setDescription('');
-      setIsAdding(false);
+      const newTask = { id: Math.random().toString(), title, description, completed: 0 };
+      insertTask(newTask, () => {
+        setTasks([...tasks, newTask]);
+        setTitle('');
+        setDescription('');
+        setIsAdding(false);
+      });
     }
   };
 
   const toggleCompletion = (taskId) => {
-    setTasks(tasks.map(task => task.id === taskId ? { ...task, completed: !task.completed } : task));
+    const task = tasks.find(t => t.id === taskId);
+    const completed = task.completed ? 0 : 1;
+
+    updateTaskCompletion(taskId, completed, () => {
+      setTasks(tasks.map(task => task.id === taskId ? { ...task, completed } : task));
+    });
+  };
+
+  const removeTask = (taskId) => {
+    deleteTask(taskId, () => {
+      setTasks(tasks.filter(task => task.id !== taskId));
+    });
   };
 
   const renderItem = ({ item }) => (
     <View style={styles.taskContainer}>
       <CheckBox
-        value={item.completed}
-        onValueChange={() => toggleCompletion(item.id)}s
+        value={item.completed === 1}
+        onValueChange={() => toggleCompletion(item.id)}
       />
       <View style={styles.taskTextContainer}>
-        <Text style={[styles.taskTitle, item.completed && styles.completedText]}>{item.title}</Text>
-        <Text style={[styles.taskDescription, item.completed && styles.completedText]}>{item.description}</Text>
+        <Text style={[styles.taskTitle, item.completed === 1 && styles.completedText]}>{item.title}</Text>
+        <Text style={[styles.taskDescription, item.completed === 1 && styles.completedText]}>{item.description}</Text>
       </View>
+      <TouchableOpacity style={styles.deleteButton} onPress={() => removeTask(item.id)}>
+        <Text style={styles.deleteButtonText}>Excluir</Text>
+      </TouchableOpacity>
     </View>
   );
 
@@ -79,7 +102,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    marginTop:50,
+    marginTop: 50,
   },
   inputContainer: {
     marginBottom: 20,
@@ -107,6 +130,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   taskTextContainer: {
+    flex: 1,
     marginLeft: 10,
   },
   taskTitle: {
@@ -119,6 +143,15 @@ const styles = StyleSheet.create({
   completedText: {
     textDecorationLine: 'line-through',
     color: 'gray',
+  },
+  deleteButton: {
+    marginLeft: 10,
+    padding: 10,
+    backgroundColor: 'red',
+    borderRadius: 5,
+  },
+  deleteButtonText: {
+    color: 'white',
   },
 });
 
