@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 
-const db = SQLite.openDatabase('tasks.db');
+const db = SQLite.openDatabaseSync('tasks.db');
 
 export const createTable = () => {
   db.transaction(tx => {

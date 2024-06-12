@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import CheckBox from 'expo-checkbox';
 import { createTable, fetchTasks, insertTask, updateTaskCompletion, deleteTask } from './SQL/dataBase';  
+import * as SQLite from 'expo-sqlite';
 
 const App = () => {
   const [tasks, setTasks] = useState([]);
